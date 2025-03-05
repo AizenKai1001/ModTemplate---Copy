@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 version = mod_version
@@ -23,7 +24,7 @@ minecraft {
     // official   MCVersion             Official field/method names from Mojang mapping files
     // parchment  YYYY.MM.DD-MCVersion  Open community-sourced parameter names and javadocs layered on top of official
     //
-    // You must be aware of the Mojang license when using the 'official' or 'parchment' mappings.
+    // You must be aware of the Mojang license when using the 'official' or the 'parchment' mappings.
     // See more information here: https://github.com/MinecraftForge/MCPConfig/blob/master/Mojang.md
     //
     // Parchment is an unofficial project maintained by ParchmentMC, separate from MinecraftForge
@@ -153,6 +154,8 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -177,6 +180,8 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    implementation fg.deobf("com.squareup.okhttp3:okhttp:4.11.0")
+    shadow implementation("com.squareup.okhttp3:okhttp:4.11.0")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -224,7 +229,7 @@ jar.finalizedBy('reobfJar')
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact jar
+            artifact shadowJar
         }
     }
     repositories {
@@ -236,4 +241,9 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+shadowJar {
+    relocate 'okhttp3', 'net.aizenkai.discordintegration.shadow.okhttp3'
+    dependencies { include(dependency('com.squareup.okhttp3:okhttp:4.11.0')) }
 }
